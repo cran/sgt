@@ -1,0 +1,13 @@
+2b548f9bd1b9f8c719a4c5b5d6d7536f *DESCRIPTION
+f5316347331b7ba1352d89bbd12a4f46 *NAMESPACE
+0b5c71941a4fd0018938ba961c0f7ae6 *R/SGT.R
+1acfd199d3fdbb9b5f69c5d952f39413 *R/SGTMLE.R
+0e720ef1dfc64fb21e5815f36b689539 *man/sgt.Rd
+a4fc470a9eda953700db3bb0f2a8cca6 *man/sgtmle.Rd
+d8bb8ee40e7925d83ddeccf76866acf1 *man/summaryMLE.Rd
+0964e780d125ff56f545ed23370ed9b6 *src/gsl_integration.c
+33bb3f8b1e00f5588b08ccab5fe7464a *src/gsl_integration.h
+4462a736cc42ef790725cc6becf68bb9 *src/gsl_roots.c
+e525612ff52eca1dbdc9a39f636a6ad0 *src/gsl_roots.h
+2ecb026a7055977cda9aee7a16038960 *src/sgt.c
+3f40d1cbd6babc8c0876d02e935ab285 *src/sgt.h
