@@ -1,67 +1,71 @@
 SQRT2 = 1.41421356237309504880168872421
 
+sgn = function(x) {
+	x[x >= 0] = 1
+	x[x < 0] = -1
+	return(x)
+}
+
 dsgt = function(x, mu = 0, sigma = SQRT2, lambda = 0, p = 2, q = 100, mean.cent = TRUE, log = FALSE) {
-	outlength = max(c(length(x),length(mu),length(sigma),length(lambda),length(p),length(q)))
-	if (!is.finite(mean.cent)) mean.cent = TRUE
-	if (!is.finite(log)) log = TRUE
-	fin = rep(TRUE, outlength)
-	finList = list(x = x, mu = mu, sigma = sigma, lambda = lambda, p = p, q = q)
-	for (i in 1:length(finList)) {
-		fin = fin & rep(is.finite(finList[[i]]), outlength)
-		eval(parse(text=paste(names(finList)[i], "[!is.finite(", names(finList)[i], ")] = 0")))
-	}
-	out = rep(0, outlength)
-	retval = .C("dsgt",outval=as.double(out),as.integer(outlength),as.integer(fin),as.double(x),as.integer(length(x)),as.double(mu),as.integer(length(mu)),as.double(sigma),as.integer(length(sigma)),as.double(lambda),as.integer(length(lambda)),as.double(p),as.integer(length(p)),as.double(q),as.integer(length(q)),as.integer(mean.cent),as.integer(log))
-	return(retval$outval)
+	n = max(length(x), length(mu), length(sigma), length(lambda), length(p), length(q))
+	x = rep(x, length.out=n)
+	mu = rep(mu, length.out=n)
+	sigma = rep(sigma, length.out=n)
+	lambda = rep(lambda, length.out=n)
+	p = rep(p, length.out=n)
+	q = rep(q, length.out=n)
+	if(mean.cent[1L]) x = x + (2*sigma*lambda*q^(1/p)*beta(2/p,q-1/p))/beta(1/p,q)
+	if(!log[1L]) return(p/(2*sigma*q^(1/p)*beta(1/p,q)*(1+abs(x-mu)^p/(q*sigma^p*(1+lambda*sgn(x-mu))^p))^(q+1/p)))
+	return(log(p)-log(2)-log(sigma)-log(q)/p-lbeta(1/p,q)-(1/p+q)*log(1+abs(x-mu)^p/(q*sigma^p*(1+lambda*sgn(x-mu))^p)))
 }
 
 psgt = function(quant, mu = 0, sigma = SQRT2, lambda = 0, p = 2, q = 100, mean.cent = TRUE, lower.tail = TRUE, log.p = FALSE) {
-	outlength = max(c(length(quant),length(mu),length(sigma),length(lambda),length(p),length(q)))
-	if (!is.finite(mean.cent)) mean.cent = TRUE
-	if (!is.finite(lower.tail)) lower.tail = TRUE
-	if (!is.finite(log.p)) log.p = TRUE
-	fin = rep(TRUE, outlength)
-	finList = list(quant = quant, mu = mu, sigma = sigma, lambda = lambda, p = p, q = q)
-	for (i in 1:length(finList)) {
-		fin = fin & rep(is.finite(finList[[i]]), outlength)
-		eval(parse(text=paste(names(finList)[i], "[!is.finite(", names(finList)[i], ")] = 0")))
-	}
-	out = rep(0,outlength)
-	retval = .C("psgt",outval=as.double(out),as.integer(outlength),as.integer(fin),as.double(quant),as.integer(length(quant)),as.double(mu),as.integer(length(mu)),as.double(sigma),as.integer(length(sigma)),as.double(lambda),as.integer(length(lambda)),as.double(p),as.integer(length(p)),as.double(q),as.integer(length(q)),as.integer(mean.cent),as.integer(lower.tail),as.integer(log.p))
-	return(retval$outval)
+	n = max(length(quant), length(mu), length(sigma), length(lambda), length(p), length(q))
+	quant = rep(quant, length.out=n)
+	mu = rep(mu, length.out=n)
+	sigma = rep(sigma, length.out=n)
+	lambda = rep(lambda, length.out=n)
+	p = rep(p, length.out=n)
+	q = rep(q, length.out=n)
+	if(mean.cent[1L]) quant = quant + (2*sigma*lambda*q^(1/p)*beta(2/p,q-1/p))/beta(1/p,q)
+	quant = quant - mu
+	flip = quant > 0
+	lambda[flip] = -lambda[flip]
+	quant[flip] = -quant[flip]
+	out = (1-lambda)/2+(lambda-1)/2*pbeta(1/(1+q*(sigma*(1-lambda)/(-quant))^p),1/p,q)
+	out[flip] = 1 - out[flip]
+	if(!lower.tail[1L]) out = 1 - out
+	if(log.p[1L]) out = log(out)
+	return(out)
 }
 
 qsgt = function(prob, mu = 0, sigma = SQRT2, lambda = 0, p = 2, q = 100, mean.cent = TRUE, lower.tail = TRUE, log.p = FALSE) {
-	outlength = max(c(length(prob),length(mu),length(sigma),length(lambda),length(p),length(q)))
-	out = rep(0,outlength)
-	if (!is.finite(mean.cent)) mean.cent = TRUE
-	if (!is.finite(lower.tail)) lower.tail = TRUE
-	if (!is.finite(log.p)) log.p = TRUE
-	fin = rep(TRUE, outlength)
-	finList = list(prob = prob, mu = mu, sigma = sigma, lambda = lambda, p = p, q = q)
-	for (i in 1:length(finList)) {
-		fin = fin & rep(is.finite(finList[[i]]), outlength)
-		eval(parse(text=paste(names(finList)[i], "[!is.finite(", names(finList)[i], ")] = 0")))
-	}
-	retval = .C("qsgt",outval=as.double(out),as.integer(outlength),as.integer(fin),as.double(prob),as.integer(length(prob)),as.double(mu),as.integer(length(mu)),as.double(sigma),as.integer(length(sigma)),as.double(lambda),as.integer(length(lambda)),as.double(p),as.integer(length(p)),as.double(q),as.integer(length(q)),as.integer(mean.cent),as.integer(lower.tail),as.integer(log.p))
-	return(retval$outval)
+	n = max(length(prob), length(mu), length(sigma), length(lambda), length(p), length(q))
+	prob = rep(prob, length.out=n)
+	mu = rep(mu, length.out=n)
+	sigma = rep(sigma, length.out=n)
+	lambda = rep(lambda, length.out=n)
+	p = rep(p, length.out=n)
+	q = rep(q, length.out=n)
+	if(log.p[1L]) prob = exp(prob)
+	if(!lower.tail[1L])	prob = 1 - prob
+	flip = prob > (1-lambda)/2
+	prob[flip] = 1 - prob[flip]
+	lam = lambda
+	lam[flip] = -lam[flip]
+	out = sigma*(lam-1)*(1/(q*qbeta(1-2*prob/(1-lam),1/p,q))-1/q)^(-1/p)
+	out[flip] = -out[flip]
+	out = out + mu
+	if(mean.cent[1L]) out = out - (2*sigma*lambda*q^(1/p)*beta(2/p,q-1/p))/beta(1/p,q)
+	return(out)
 }
 
 rsgt = function(n, mu = 0, sigma = SQRT2, lambda = 0, p = 2, q = 100, mean.cent = TRUE) {
-	if (!is.finite(mean.cent)) mean.cent = TRUE
-    if (length(n) > 1) n = length(n)
-	if (as.integer(n) <= 0) stop("'n' must be a postive integer")
-	fin = rep(TRUE, n)
-	finList = list(mu = mu, sigma = sigma, lambda = lambda, p = p, q = q)
-	for (i in 1:length(finList)) {
-		fin = fin & rep(is.finite(finList[[i]]), n)
-		eval(parse(text=paste(names(finList)[i], "[!is.finite(", names(finList)[i], ")] = 0")))
-	}
-	burnin = 3
-	out = rep(0,as.integer(n))
-	unif = runif(2*burnin*as.integer(n))
-	retval = .C("rsgt",outval=as.double(out),as.integer(n),as.integer(fin),as.integer(burnin),as.double(unif),as.double(mu),as.integer(length(mu)),as.double(sigma),as.integer(length(sigma)),as.double(lambda),as.integer(length(lambda)),as.double(p),as.integer(length(p)),as.double(q),as.integer(length(q)),as.integer(mean.cent))
-	return(retval$outval)
+	if(length(n) > 1) n = length(n)
+	mu = rep(mu, length.out=n)
+	sigma = rep(sigma, length.out=n)
+	lambda = rep(lambda, length.out=n)
+	p = rep(p, length.out=n)
+	q = rep(q, length.out=n)
+	qsgt(runif(n), mu, sigma, lambda, p, q, mean.cent)
 }
-
-

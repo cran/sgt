@@ -1,5 +1,3 @@
-useDynLib(sgt)
-
 export(dsgt)
 export(psgt)
 export(qsgt)

@@ -63,34 +63,22 @@ mean.cent = TRUE)
   \deqn{
   	    \frac{\sigma^h q^{\frac{h}{p}} Beta(\frac{h+1}{p},q-\frac{h}{p})}{2 Beta(\frac{1}{p},q)} ((1+\lambda)^{h+1}+(-1)^h (1-\lambda)^{h+1})
   }
-  
-  Note that for large values of \code{sigma}, both the \code{psgt} and \code{qsgt} algortithms can be overwhelmed and result in an error.
 }
 \seealso{
   \link{Distributions} for other standard distributions which are special cases of the skewed generalized t distribution, including \code{\link{dt}} for the t distribution, \code{\link{dnorm}} for the normal distribution, and \code{\link{dunif}} for the uniform distribution. Other special cases of the skewed generalized t distribution include the generalized t distribution in the \code{gamlss.dist} package, the skewed t distribution in the \code{skewt} package, the exponential power distribution (also known as the generalized error distribution) in the \code{normalp} package, and the Laplace distribution in the \code{rmutil} package. Also see \code{\link{beta}} for the beta function.
 }
 \source{
   For \code{psgt}, based on
+  
+  a transformation of the cumulative probability density function that uses the incomplete beta function.
 
-  the GNU Scientific Library (GSL) QAG and QAGIL quadrature algorithms. This provides accurate results for at least 10 digits.
-  https://www.gnu.org/software/gsl/manual/html_node/Numerical-Integration.html 
+  For \code{qsgt}, based on
+  
+  solving for the inverse of the \code{psgt} function that uses the inverse of the incomplete beta function.
 
-  For \code{qnorm}, based on
-
-  the GNU Scientific Library (GSL) Steffensen root finding algorithm. The algorithm finds the root of 
-  \deqn{
-  	F(x) - p
-  	}
-  where \eqn{F(x)} is the distribution function of the skewed generalized t distribution, and \eqn{p} is the given probability. This algorithm provides precise results for at least 9 digits past the decimal.
-  https://www.gnu.org/software/gsl/manual/html_node/One-dimensional-Root_002dFinding.html
-
-  For \code{rnorm}, the algorithm employs a simple slice sampler to sample the skewed generalized t distribution.
+  For \code{rnorm}, the algorithm simply uses the \code{qsgt} function with probabilities that are uniformly distributed.
 }
 \references{
-	
-  Besag, J., and Green, P. J. (1993)
-  "Spatial Statistics and Bayesian Computation"
-  \emph{Journal of the Royal Statistical Society}, volume 55, 25-37.
   
   Hansen, C., McDonald, J. B., and Newey, W. K. (2010)
   "Instrumental Variables Regression with Flexible Distributions"
