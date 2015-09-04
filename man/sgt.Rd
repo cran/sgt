@@ -12,14 +12,16 @@
   generation for the skewed generalized t distribution.
 }
 \usage{
-dsgt(x, mu = 0, sigma = SQRT2, lambda = 0, p = 2, q = 100, 
-mean.cent = TRUE, log = FALSE)
-psgt(quant, mu = 0, sigma = SQRT2, lambda = 0, p = 2, q = 100, 
-mean.cent = TRUE, lower.tail = TRUE, log.p = FALSE)
-qsgt(prob, mu = 0, sigma = SQRT2, lambda = 0, p = 2, q = 100, 
-mean.cent = TRUE, lower.tail = TRUE, log.p = FALSE)
-rsgt(n, mu = 0, sigma = SQRT2, lambda = 0, p = 2, q = 100, 
-mean.cent = TRUE)
+dsgt(x, mu = 0, sigma = 1, lambda = 0, p = 2, q = Inf, 
+mean.cent = TRUE, var.adj = TRUE, log = FALSE)
+psgt(quant, mu = 0, sigma = 1, lambda = 0, p = 2, q = Inf, 
+mean.cent = TRUE, var.adj = TRUE, lower.tail = TRUE, 
+log.p = FALSE)
+qsgt(prob, mu = 0, sigma = 1, lambda = 0, p = 2, q = Inf, 
+mean.cent = TRUE, var.adj = TRUE, lower.tail = TRUE, 
+log.p = FALSE)
+rsgt(n, mu = 0, sigma = 1, lambda = 0, p = 2, q = Inf, 
+mean.cent = TRUE, var.adj = TRUE)
 }
 \arguments{
   \item{x, quant}{vector of quantiles.}
@@ -27,10 +29,11 @@ mean.cent = TRUE)
   \item{n}{number of observations. If \code{length(n) > 1}, the length
     is taken to be the number required.}
   \item{mu}{vector of parameters. Note that if \code{mean.cent == TRUE}, \code{mu} is the mean of the distribution. Otherwise, \code{mu} is the mode of the distribution.}
-  \item{sigma}{vector of variance parameters. The default is \code{sqrt(2)}. The variance of the distribution increases as \code{sigma} increases. Must be strictly positive.}
+  \item{sigma}{vector of variance parameters. The default is 1. The variance of the distribution increases as \code{sigma} increases. Must be strictly positive.}
   \item{lambda}{vector of skewness parameters. Note that \code{-1 < lambda < 1}. If \code{lambda < 0}, the distribution is skewed to the left. If \code{lambda > 0}, the distribution is skewed to the right. If \code{lambda = 0}, then the distribution is symmetric.}
-  \item{p, q}{vector of parameters. Smaller values of \code{p} and \code{q} result in larger values for the kurtosis of the distribution. Note that \code{p > 0}, \code{q > 0}, and \code{p*q > 1} must hold.}
-  \item{mean.cent}{logical; if TRUE, \code{mu} is the mean of the distribution, otherwise \code{mu} is the mode of the distribution.}
+  \item{p, q}{vector of parameters. Smaller values of \code{p} and \code{q} result in larger values for the kurtosis of the distribution. Allowed to be infinite. Note that \code{p > 0}, \code{q > 0}, otherwise \code{NaNs} will be produced.}
+  \item{mean.cent}{logical; if TRUE, \code{mu} is the mean of the distribution, otherwise \code{mu} is the mode of the distribution. May only be used if \code{p*q > 1}, otherwise \code{NaNs} will be produced.}
+  \item{var.adj}{logical or a positive scalar. If \code{TRUE}, then \code{sigma} is rescaled so that \code{sigma} is the variance. If \code{FALSE}, then \code{sigma} is not rescaled. If \code{var.adj} is a positive scalar, then \code{sigma} is rescaled by \code{var.adj}. May only be used if \code{p*q > 2}, otherwise \code{NaNs} will be produced.}
   \item{log, log.p}{logical; if TRUE, probabilities p are given as log(p).}
   \item{lower.tail}{logical; if TRUE (default), probabilities are
     \eqn{P[X \le x]} otherwise, \eqn{P[X > x]}.}
@@ -49,20 +52,13 @@ mean.cent = TRUE)
   length of the result.  Only the first elements of the logical
   arguments are used.
   
-  \code{sigma <= 0}, \code{lambda <= -1}, \code{lambda >= 1}, \code{p <= 0}, \code{q <= 0}, and \code{p*q <= 1} are errors and return \code{NaN}.
+  \code{sigma <= 0}, \code{lambda <= -1}, \code{lambda >= 1}, \code{p <= 0}, and \code{q <= 0} are errors and return \code{NaN}. Also, if \code{mean.cent} is \code{TRUE} but code{p*q <= 1}, the result is an error and \code{NaNs} are produced. Similarly, if \code{var.adj} is \code{TRUE} but code{p*q <= 2}, the result is an error and \code{NaNs} are produced.
 }
 \author{Carter Davis, \email{carterdavis@byu.edu}}
 \details{
-  If \code{mu}, \code{sigma}, \code{lambda}, \code{p}, or \code{q} are not specified they assume the default values of \code{mu = 0}, \code{sigma} is approximately \code{sqrt(2)}, \code{lambda = 0}, \code{p = 2}, and \code{q = 100}. These default values approximate a standard normal. As \code{q} approaches infinity with the other default values fixed, this distribution converges to the standard normal distribution.
+  If \code{mu}, \code{sigma}, \code{lambda}, \code{p}, or \code{q} are not specified they assume the default values of \code{mu = 0}, \code{sigma = 1}, \code{lambda = 0}, \code{p = 2}, and \code{q = Inf}. These default values yield a standard normal distribution. 
 
-  The skewed generalized t distribution has density
-  \deqn{ 	
-  	    f(x) = \frac{p}{2 \sigma q^{1/p} Beta( \frac{1}{p}, q) ( \frac{| x-\mu+ m | ^p}{q \sigma ^p (\lambda sign(x-\mu+ m) + 1)^p} + 1)^{\frac{1}{p}+q}}
-  }
-  where \eqn{m} is the mean of the distribution, \eqn{sign(x) = 1} for \eqn{x >= 0}, and \eqn{sign(x) = -1} for \eqn{x < 0}. If \code{mean.cent = TRUE}, then \eqn{m} is set to zero. The h\emph{th} moment of the distribution is defined for \eqn{p*q > h} to be 
-  \deqn{
-  	    \frac{\sigma^h q^{\frac{h}{p}} Beta(\frac{h+1}{p},q-\frac{h}{p})}{2 Beta(\frac{1}{p},q)} ((1+\lambda)^{h+1}+(-1)^h (1-\lambda)^{h+1})
-  }
+  See \code{vignette('sgt')} for the probability density function, moments, and various special cases of the skewed generalized t distribution.
 }
 \seealso{
   \link{Distributions} for other standard distributions which are special cases of the skewed generalized t distribution, including \code{\link{dt}} for the t distribution, \code{\link{dnorm}} for the normal distribution, and \code{\link{dunif}} for the uniform distribution. Other special cases of the skewed generalized t distribution include the generalized t distribution in the \code{gamlss.dist} package, the skewed t distribution in the \code{skewt} package, the exponential power distribution (also known as the generalized error distribution) in the \code{normalp} package, and the Laplace distribution in the \code{rmutil} package. Also see \code{\link{beta}} for the beta function.
@@ -70,13 +66,13 @@ mean.cent = TRUE)
 \source{
   For \code{psgt}, based on
   
-  a transformation of the cumulative probability density function that uses the incomplete beta function.
+  a transformation of the cumulative probability density function that uses the incomplete beta function or incomplete gamma function.
 
   For \code{qsgt}, based on
   
-  solving for the inverse of the \code{psgt} function that uses the inverse of the incomplete beta function.
+  solving for the inverse of the \code{psgt} function that uses the inverse of the incomplete beta function or incomplete gamma function.
 
-  For \code{rnorm}, the algorithm simply uses the \code{qsgt} function with probabilities that are uniformly distributed.
+  For \code{rsgt}, the algorithm simply uses the \code{qsgt} function with probabilities that are uniformly distributed.
 }
 \references{
   
@@ -96,17 +92,21 @@ mean.cent = TRUE)
 \examples{
 require(graphics)
 
-### This shows how default values of the SGT allows
-### it to approximate a standord normal distribution
-x = seq(-4,4,by=0.05)
-plot(x, dnorm(x), type='l')
-lines(x, dsgt(x), col='blue')
+### This shows how to get a normal distribution
+x = seq(-4,6,by=0.05)
+plot(x, dnorm(x, mean=1, sd=1.5), type='l')
+lines(x, dsgt(x, mu=1, sigma=1.5), col='blue')
 
-### This shows how the p and q parameters change the distribution
-plot(x, dsgt(x, p = 2, q = 2), type='l')
-lines(x, dsgt(x, p = 5, q = 1000), col='blue')
+### This shows how to get a cauchy distribution
+plot(x, dcauchy(x, location=1, scale=1.3), type='l')
+lines(x, dsgt(x, mu=1, sigma=1.3, q=1/2, mean.cent=FALSE, var.adj = sqrt(2)), col='blue')
 
-psgt(0)
-psgt(0, lambda = -0.5)
+### This shows how to get a Laplace distribution
+plot(x, dsgt(x, mu=1.2, sigma=1.8, p=1, var.adj=FALSE), type='l', col='blue')
+
+### This shows how to get a uniform distribution
+plot(x, dunif(x, min=1.2, max=2.6), type='l')
+lines(x, dsgt(x, mu=1.9, sigma=0.7, p=Inf, var.adj=FALSE), col='blue')
+
 }
 \keyword{distribution}

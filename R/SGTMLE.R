@@ -1,78 +1,66 @@
-summary.MLE = function(object, ...) {
-	params = object$parameters
-	class(object) = c("maxLik","maxim","list")
-	object = summary(object)
-	object$parameters = params
-	class(object) = c("summary.MLE", "summary.maxLik")
+print.sgtest = function(x, ...) {
+	cat("Skewed Generalized T MLE Fit\n")
+	cat("Best Result with", x$best.method.used, "Maximization\n")
+	cat("Convergence Code ", x$convcode, ": ", sep="")
+	if (x$convcode == 0) {
+		cat("Successful Convergence\n")
+	} else if (x$convcode == 1) {
+		cat("Iteration Limit Reached\n")
+	} else if (x$convcode == 20) {
+		cat("Initial Set of Parameters is not Permissible\n")
+	} else {
+		cat("Maximization Failure\n")
+	}
+	cat("Iterations:", x$niter)
+	cat(", Log-Likelihood:", x$maximum, "\n")
+	cat("Estimate(s):\n")
+	print(noquote(format(round(x$estimate, 4), nsmall=4)))
+}
+
+summary.sgtest = function(object, ...) {
+	object$z.score = object$estimate/object$std.error
+	object$p.value = 2*stats::pnorm(-abs(object$z.score))
+	names(object$z.score) = names(object$estimate)
+	names(object$p.value) = names(object$estimate)
+	object$summary.table = as.data.frame(cbind(object$estimate, object$std.error, object$z.score, object$p.value), row.names=names(object$estimate))
+	names(object$summary.table) = c("Est.", "Std. Err.", "z", "P>|z|")
+	class(object) = c("summary.sgtest", "list")
 	object
 }
 
-print.summary.MLE = function(x, ...) {
-	cat('--------------------------------------------\n')
-	cat('Maximum Likelihood estimation\n')
-	cat(paste(x$maximType, ", ", x$iterations, " iterations\n", sep=""))
-	cat(paste("Return code ", x$returnCode, ": ", x$returnMessage, "\n", sep=""))
-	cat(paste("Log-Likelihood: ", format(x$loglik, digits=4, nsmall=4), "\n",sep=""))
-	cat(paste(x$NActivePar,"free parameter"))
-	if(x$NActivePar > 1) cat("s\n")
-	cat("Estimates:\n")
-	Parameters = x$parameters
-	print(cbind(Parameters,format(as.data.frame(x$estimate), digits=4)))
-	cat('--------------------------------------------\n')
-}
-
-print.mult.MLE = function(x, ...) {
-	cat('Maximum Likelihood estimation\n')
-	maxval = x[[1L]]$maximum
-	maxindex = 1L
-	for (i in 2:length(x)) {
-		if (x[[i]]$maximum > maxval) {
-			maxval = x[[i]]$maximum
-			maxindex = i
-		}
+print.summary.sgtest = function(x, ...) {
+	cat("Skewed Generalized T MLE Fit\n")
+	cat("Best Result with", x$best.method.used, "Maximization\n")
+	cat("Convergence Code ", x$convcode, ": ", sep="")
+	if (x$convcode == 0) {
+		cat("Successful Convergence\n")
+	} else if (x$convcode == 1) {
+		cat("Iteration Limit Reached\n")
+	} else if (x$convcode == 20) {
+		cat("Initial Set of Parameters is not Permissible\n")
+	} else {
+		cat("Maximization Failure\n")
 	}
-	subx = x[[maxindex]]
-	cat('Highest Log-Likelihood value: ')
-	cat(paste(format(subx$maximum, digits=4, nsmall=4),"\n"))
-	cat(paste(subx$type, ", ", subx$iterations, " iterations\n", sep=""))
-	cat(paste("Return code ", subx$code, ": ", subx$message, "\n", sep=""))
-	cat("Estimate(s): ")
-	cat(format(subx$estimate, digits=4, nsmall=4))
-	cat("\n")
+	cat("Iterations:", x$niter)
+	cat(", Log-Likelihood:", x$maximum, "\n\n")
+	signif = rep("", length.out = length(x$estimate))
+	signif[x$p.value < 0.1] = "."
+	signif[x$p.value < 0.05] = "*"
+	signif[x$p.value < 0.01] = "**"
+	signif[x$p.value < 0.001] = "***"
+	outtable = cbind(format(round(x$summary.table, 4), nsmall = 4), signif)
+	names(outtable)[5] = ""
+	print(noquote(outtable))
+	cat("---\n")
+	cat("Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\n")
 }
 
-summary.mult.MLE = function(object, ...) {
-	maxNames = names(object)
-	result = list()
-	for (i in maxNames) {
-		eval(parse(text=paste("result$", i, " = summary(object$", i, ")", sep="")))
-	}
-    class(result) = c("summary.mult.MLE", class(result))
-    result
-}
-
-print.summary.mult.MLE = function(x, ...) {
-    cat('Maximum Likelihood estimation\n')
-    cat('--------------------------------------------\n')
-    for (i in 1:length(x)) {
-        cat(paste(x[[i]]$maximType, ", ", x[[i]]$iterations, " iterations\n", sep=""))
-        cat(paste("Return code ", x[[i]]$returnCode, ": ", x[[i]]$returnMessage, "\n", sep=""))
-        cat(paste("Log-Likelihood: ", format(x[[i]]$loglik, digits=4, nsmall=4), "\n",sep=""))
-        cat(paste(x[[i]]$NActivePar,"free parameter"))
-        if(x[[i]]$NActivePar > 1) cat("s\n")
-            cat("Estimates:\n")
-        Parameters = x[[i]]$parameters
-        print(cbind(Parameters, format(as.data.frame(x[[i]]$estimate), digits=4)))
-        cat('--------------------------------------------\n')
-    }
-}
-
-sgt.mle = function(X.f, mu.f = mu ~ mu, sigma.f = sigma ~ sigma, lambda.f = lambda ~ lambda, p.f = p ~ p, q.f = q ~ q, data = parent.frame(), start, subset, method = 'BFGS', constraints = NULL, follow.on = FALSE, iterlim = 5000, ...) {
+sgt.mle = function(X.f, mu.f = mu ~ mu, sigma.f = sigma ~ sigma, lambda.f = lambda ~ lambda, p.f = p ~ p, q.f = q ~ q, data = parent.frame(), start, subset, method = c("Nelder-Mead", "BFGS"), itnmax = NULL, hessian.method="Richardson", gradient.method="Richardson", mean.cent = TRUE, var.adj = TRUE, ...) {
 	formList = list(X = X.f, mu = mu.f, sigma = sigma.f, lambda = lambda.f, p = p.f, q = q.f)
 	varNames = NULL
 	envir = new.env()
 	for(i in 1:6) {
-		formList[[i]] = as.formula(formList[[i]])
+		formList[[i]] = stats::as.formula(formList[[i]])
 		if(length(formList[[i]]) == 2L) {
 			formList[[i]][[3L]] = formList[[i]][[2L]]
 			formList[[i]][[2L]] = as.name(names(formList)[i])
@@ -101,62 +89,43 @@ sgt.mle = function(X.f, mu.f = mu ~ mu, sigma.f = sigma ~ sigma, lambda.f = lamb
 	if(length(varNames) > 1) {
 		for(i in 2:length(varNames)) {
 			if(length(eval(parse(text=paste("envir$", varNames[1L], sep="")))) != length(eval(parse(text=paste("envir$", varNames[i], sep="")))))
-				stop(paste("The length of the variable", varNames[i], "does not match the length of the variable", varNames[1L]))
+				stop(paste("the length of the variable", varNames[i], "does not match the length of the variable", varNames[1L]))
 		}
 	}
+	control = list(...)
+	if(!is.null(control$maximize)) stop("'maximize' option not allowed")
 	if(!missing(subset))
 		for(i in varNames) assign(i, eval(parse(text=paste("envir$", i, "[subset]", sep=""))), envir)
 	keep = rep(TRUE,length(eval(parse(text=paste("envir$", varNames[1L], sep="")))))
 	for(i in varNames) keep = keep & is.finite(eval(parse(text=paste("envir$", i, sep=""))))
 	for(i in varNames) assign(i, eval(parse(text=paste("envir$", i, "[keep]", sep=""))), envir)
-	logLik = function(params) {
-		for (i in 1:length(parNames)) assign(parNames[i], params[i])
+	loglik = function(params) {
+		for (i in 1:length(parNames)) assign(parNames[i], unlist(params[i]))
         X = eval(formList[[1L]][[3L]])
         mu = eval(formList[[2L]][[3L]])
         sigma = eval(formList[[3L]][[3L]])
         lambda = eval(formList[[4L]][[3L]])
         p = eval(formList[[5L]][[3L]])
         q = eval(formList[[6L]][[3L]])
-		dsgt(X, mu, sigma, lambda, p, q, log=TRUE)
+		sum(dsgt(X, mu, sigma, lambda, p, q, mean.cent, var.adj, log=TRUE))
 	}
-	environment(logLik) = envir
-	method = toupper(method)
-	if (sum(is.na(match(method, c("NR", "BFGS", "BHHH", "SANN", "CG", "NM")))) > 0)
-		stop("'method' argument is not valid")
-	if (length(method) == 1) {
-		result = maxLik(logLik = logLik, start = as.numeric(unlist(start)), method = method, constraints = constraints, iterlim = iterlim, ...)
-		class(result) = c("MLE", class(result))
-		result$parameters = parNames
-	} else {
-		result = list()
-		envir2 = new.env()
-		for (i in 1:length(method)) {
-			if(!exists(method[i], envir2))
-				assign(method[i], 1, envir2)
-			else
-				assign(method[i], eval(parse(text=paste("envir2$", method[i], sep="")))+1, envir2)
-			resultStr = paste("result$", method[i], sep="")
-			if (eval(parse(text=paste("envir2$", method[i], sep=""))) > 1)
-				resultStr = paste(resultStr, eval(parse(text=paste("envir2$", method[i], sep=""))), sep="")
-			if (length(iterlim) == 1)
-				iters = iterlim
-			else if (length(iterlim) == length(method))
-				iters = iterlim[i]
-			else stop("'iterlim' must either be a positive integer or a vector of positive integers with the same length as 'method'")
-			out = tryCatch(maxLik(logLik = logLik, start = as.numeric(unlist(start)), method = method[i], constraints = constraints, iterlim = iters, ...), error = function(e) e)
-			if (!("error" %in% class(out))) {
-				class(out) = c("MLE", class(out))
-				out$parameters = parNames
-				eval(parse(text=paste(resultStr, " = out", sep="")))
-				if (follow.on)
-					start = out$estimate
-			} else {
-				warning(paste("maximisation using the ", method[i], " method failed:\n", out$message, "; this method must be skipped", sep=""))
-			}
-		}
-		if (length(result) == 0)
-			stop("all maximisation methods failed")
-		class(result) = c("mult.MLE", class(result))
-	}
-	result
+	environment(loglik) = envir
+	negloglik = function(params) {-loglik(params)} 
+	if (!is.finite(loglik(start))) stop("'start' yields infinite or non-computable SGT function values")
+	optimum = suppressWarnings(optimx::optimx(par = unlist(start), fn = negloglik, method = method, itnmax = itnmax, control = control))
+	minimum = min(optimum$value, na.rm = TRUE)
+	if(!is.finite(minimum)) stop("All Maximization Methods Failed")
+	whichbest = max(which(minimum == optimum$value))
+	optimal = optimum[whichbest,]
+	estimate = as.numeric(optimum[whichbest, 1:length(parNames)])
+	names(estimate) = parNames
+	H = tryCatch(numDeriv::hessian(loglik, estimate, method = hessian.method), error = function(e) {warning("hessian matrix calculation failed"); return(as.matrix(NaN))})
+	varcov = tryCatch(-qr.solve(H), error = function(e) {warning("covariance matrix calculation failed due to a problem with the hessian"); return(as.matrix(NaN))})
+	std.error = sqrt(diag(varcov))
+	if(is.finite(varcov[1,1])) names(std.error) = parNames
+	gradient = tryCatch(numDeriv::grad(loglik, estimate, method = gradient.method), error = function(e) {warning("gradient calculation failed"); return(NaN)})
+	result = list(maximum = -minimum, estimate = estimate, convcode = as.numeric(optimal$convcode), niter = as.numeric(optimal$niter), best.method.used = row.names(optimal), optimx = optimum, hessian = H, gradient = gradient, varcov = varcov, std.error = std.error)
+	class(result) = c("sgtest", class(result))
+	return(result)
 }
+
