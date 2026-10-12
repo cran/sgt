@@ -40,7 +40,7 @@
 # SINGLE VARIABLE ESTIMATION:
 ### generate random variable
 set.seed(7900)
-n = 1000
+n = 200
 x = rsgt(n, mu = 2, sigma = 2, lambda = -0.25, p = 1.7, q = 7)
 
 ### Get starting values and estimate the parameter values

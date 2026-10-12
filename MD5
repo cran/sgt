@@ -1,4 +1,4 @@
-ac8a491bac266c4c3d172d62e64bfa4c *DESCRIPTION
+fe995a639fc5a84ef992e975fec70d1f *DESCRIPTION
 75c4a8911d35e8d1636a6a175ff61424 *NAMESPACE
 24f78f769bb42f793bf6abade8ae332f *R/InternalSGED.R
 26f7c64a4c0bdedfe00c90c76e2c8f7e *R/InternalSGT.R
@@ -6,12 +6,12 @@ ac8a491bac266c4c3d172d62e64bfa4c *DESCRIPTION
 6391108628ffede1716cd95d50a0798e *R/SGT.R
 61f6c78b09137e844f4975211e8c6244 *R/SGTMLE.R
 00d15ad49a71f8ede3329a6009d0b86e *README.md
-7a40cc0b1d5b86e516d6e51f2f0cf637 *build/vignette.rds
+dcd2e171d3b80b345a0ca89ec84db051 *build/vignette.rds
 1a5b0d2a270a44610427c5421aebcffb *inst/doc/sgt.Rnw
-94eecd9a71bb6ea3795bd89520a73869 *inst/doc/sgt.pdf
-db180cf028129c2eb5bc9be9814231f6 *man/sgt.Rd
-acbaed74657e77fa854a76898ceb9013 *man/sgtmle.Rd
-835c04315086ec8b2b2c492b4c29c96f *man/summarysgtest.Rd
+1b73f865c0ec1361616bedc3e39cc1a7 *inst/doc/sgt.pdf
+2176deaebd52094ad7a5a08fb3846712 *man/sgt.Rd
+e61c20c7a58c8108385dde41e3bd54e2 *man/sgtmle.Rd
+5b450cb39750449236b01a7ca2b11bec *man/summarysgtest.Rd
 f40084e53d869603b5892747e372d7b5 *vignettes/graphics/SGT_tree.png
 63d20268f286d06a357e76a74366d373 *vignettes/graphics/lambda.png
 d16904cc5574ad591dbe8ec0c382e75a *vignettes/graphics/mu.png

@@ -52,7 +52,7 @@ mean.cent = TRUE, var.adj = TRUE)
   length of the result.  Only the first elements of the logical
   arguments are used.
   
-  \code{sigma <= 0}, \code{lambda <= -1}, \code{lambda >= 1}, \code{p <= 0}, and \code{q <= 0} are errors and return \code{NaN}. Also, if \code{mean.cent} is \code{TRUE} but code{p*q <= 1}, the result is an error and \code{NaNs} are produced. Similarly, if \code{var.adj} is \code{TRUE} but code{p*q <= 2}, the result is an error and \code{NaNs} are produced.
+  \code{sigma <= 0}, \code{lambda <= -1}, \code{lambda >= 1}, \code{p <= 0}, and \code{q <= 0} are errors and return \code{NaN}. Also, if \code{mean.cent} is \code{TRUE} but \code{p*q <= 1}, the result is an error and \code{NaNs} are produced. Similarly, if \code{var.adj} is \code{TRUE} but \code{p*q <= 2}, the result is an error and \code{NaNs} are produced.
 }
 \author{Carter Davis, \email{carterdavis@byu.edu}}
 \details{
